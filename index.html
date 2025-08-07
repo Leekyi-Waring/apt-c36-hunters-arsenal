@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APT-C-36 Hunter's Arsenal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d3a 50%, #1a1a1a 100%);
+            color: #00ff41;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .arsenal-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: linear-gradient(45deg, #ff0000, #cc0000, #ff0000);
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(255, 0, 0, 0.4);
+            animation: pulse-glow 3s infinite;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: sweep 4s infinite;
+        }
+        
+        .title {
+            font-size: 36px;
+            font-weight: bold;
+            color: #ffffff;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .subtitle {
+            font-size: 18px;
+            color: #ffff00;
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hunting-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .main-hunting-panel {
+            background: rgba(15, 15, 15, 0.9);
+            border: 2px solid #00ff41;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.3);
+            position: relative;
+        }
+        
+        .panel-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #00ff00;
+        }
+        
+        .panel-icon {
+            font-size: 24px;
+            margin-right: 15px;
+            animation: spin-glow 2s infinite;
+        }
+        
+        .panel-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #00ff41;
+        }
+        
+        .hunting-tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff0000;
+            color: #ff0000;
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .tab.active {
+            background: linear-gradient(45deg, #ff0000, #cc0000);
+            color: #ffffff;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+        }
+        
+        .tab:hover {
+            background: rgba(255, 0, 0, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .hunt-content {
+            min-height: 400px;
+        }
+        
+        .ioc-hunter {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .ioc-category {
+            background: rgba(0, 255, 65, 0.15);
+            border: 1px solid #00ff41;
+            border-radius: 10px;
+            padding: 15px;
+        }
+        
+        .ioc-category h4 {
+            color: #ffff00;
+            margin-bottom: 15px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .ioc-category h4::before {
+            content: "🎯";
+            margin-right: 8px;
+        }
+        
+        .ioc-item {
+            background: rgba(20, 20, 20, 0.9);
+            border: 1px solid rgba(0, 255, 65, 0.4);
+            border-radius: 6px;
+            padding: 10px;
+            margin: 8px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            color: #ffffff;
+        }
+        
+        .ioc-item:hover {
+            border-color: #ff0000;
+            background: rgba(255, 0, 0, 0.2);
+            transform: scale(1.02);
+            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
+        }
+        
+        .ioc-item.clicked {
+            background: linear-gradient(45deg, #00ff00, #008800);
+            color: #000000;
+            font-weight: bold;
+        }
+        
+        .query-generator {
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #ffff00;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .query-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .query-type {
+            background: linear-gradient(45deg, #ffff00, #cccc00);
+            color: #000000;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .query-box {
+            background: #1a1a1a;
+            border: 1px solid #00ff41;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #00ff41;
+            min-height: 120px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            position: relative;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff0000;
+            color: #ffffff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .copy-btn:hover {
+            background: #cc0000;
+            transform: scale(1.1);
+        }
+        
+        .copy-btn.copied {
+            background: #00ff00;
+            color: #000000;
+        }
+        
+        .sidebar {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .threat-intel-panel {
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid #ff0000;
+            border-radius: 15px;
+            padding: 20px;
+        }
+        
+        .intel-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .intel-icon {
+            font-size: 20px;
+            margin-right: 10px;
+            color: #ff0000;
+        }
+        
+        .intel-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #ff0000;
+        }
+        
+        .threat-meter {
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .meter-label {
+            color: #ffff00;
+            font-size: 14px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        .meter-bar {
+            width: 100%;
+            height: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .meter-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffff00, #ff0000);
+            border-radius: 12px;
+            position: relative;
+            animation: pulse-bar 2s infinite;
+        }
+        
+        .meter-text {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #000000;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+        }
+        
+        .mitre-matrix {
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #00ff00;
+            border-radius: 10px;
+            padding: 15px;
+        }
+        
+        .mitre-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .mitre-cell {
+            background: rgba(255, 0, 0, 0.3);
+            border: 1px solid #ff0000;
+            padding: 8px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 5px;
+        }
+        
+        .mitre-cell:hover {
+            background: linear-gradient(45deg, #ff0000, #cc0000);
+            color: #ffffff;
+            transform: scale(1.1);
+            z-index: 10;
+            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.5);
+        }
+        
+        .detection-opportunities {
+            background: rgba(0, 255, 0, 0.1);
+            border: 2px solid #00ff00;
+            border-radius: 15px;
+            padding: 20px;
+        }
+        
+        .opportunity-item {
+            background: rgba(0, 0, 0, 0.7);
+            border-left: 4px solid #ffff00;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 0 8px 8px 0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .opportunity-item:hover {
+            background: rgba(255, 255, 0, 0.2);
+            transform: translateX(5px);
+        }
+        
+        .opportunity-title {
+            font-weight: bold;
+            color: #ffff00;
+            margin-bottom: 5px;
+        }
+        
+        .opportunity-desc {
+            font-size: 12px;
+            color: #e0e0e0;
+            line-height: 1.4;
+        }
+        
+        .stats-ticker {
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #00ff00;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .ticker-content {
+            animation: ticker-scroll 20s linear infinite;
+            white-space: nowrap;
+        }
+        
+        .ticker-item {
+            display: inline-block;
+            margin-right: 50px;
+            color: #00ff00;
+            font-weight: bold;
+        }
+        
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 15px 40px rgba(255, 0, 0, 0.4); }
+            50% { box-shadow: 0 15px 40px rgba(255, 0, 0, 0.8); }
+            100% { box-shadow: 0 15px 40px rgba(255, 0, 0, 0.4); }
+        }
+        
+        @keyframes sweep {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+        
+        @keyframes spin-glow {
+            0% { transform: rotate(0deg); color: #00ff00; }
+            25% { color: #ffff00; }
+            50% { transform: rotate(180deg); color: #ff0000; }
+            75% { color: #ffff00; }
+            100% { transform: rotate(360deg); color: #00ff00; }
+        }
+        
+        @keyframes pulse-bar {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { opacity: 0.8; }
+        }
+        
+        @keyframes ticker-scroll {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        
+        .matrix-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.1;
+        }
+        
+        .matrix-char {
+            position: absolute;
+            color: #00ff41;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            animation: matrix-fall linear infinite;
+        }
+        
+        @keyframes matrix-fall {
+            0% { transform: translateY(-100vh); opacity: 1; }
+            100% { transform: translateY(100vh); opacity: 0; }
+        }
+        
+        @media (max-width: 1200px) {
+            .hunting-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .ioc-hunter {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Matrix Rain Effect -->
+    <div class="matrix-rain" id="matrixRain"></div>
+    
+    <div class="arsenal-container">
+        <div class="header">
+            <div class="title">🔥 HUNTER'S ARSENAL 🔥</div>
+            <div class="subtitle">APT-C-36 Interactive Threat Hunting Platform</div>
+        </div>
+        
+        <div class="hunting-grid">
+            <div class="main-hunting-panel">
+                <div class="panel-header">
+                    <div class="panel-icon">🎯</div>
+                    <div class="panel-title">ACTIVE HUNT OPERATIONS</div>
+                </div>
+                
+                <div class="hunting-tabs">
+                    <div class="tab active" data-tab="ioc">IOC Hunter</div>
+                    <div class="tab" data-tab="behavioral">Behavioral</div>
+                    <div class="tab" data-tab="network">Network</div>
+                    <div class="tab" data-tab="timeline">Timeline</div>
+                </div>
+                
+                <div class="hunt-content">
+                    <div id="ioc-content" class="tab-content active">
+                        <div class="ioc-hunter">
+                            <div class="ioc-category">
+                                <h4>🌐 Network Indicators</h4>
+                                <div class="ioc-item" data-type="domain" data-query="dns">sistema-bancario[.]mx</div>
+                                <div class="ioc-item" data-type="domain" data-query="dns">portal-financeiro[.]br</div>
+                                <div class="ioc-item" data-type="domain" data-query="dns">servicio-tributario[.]co</div>
+                                <div class="ioc-item" data-type="ip" data-query="network">34.102.136[.]145</div>
+                                <div class="ioc-item" data-type="ip" data-query="network">18.144.78[.]92</div>
+                                <div class="ioc-item" data-type="ip" data-query="network">52.67.234[.]156</div>
+                            </div>
+                            
+                            <div class="ioc-category">
+                                <h4>📁 File Indicators</h4>
+                                <div class="ioc-item" data-type="hash" data-query="file">89abcdef1234567890abcdef...</div>
+                                <div class="ioc-item" data-type="hash" data-query="file">1234567890abcdef1234567...</div>
+                                <div class="ioc-item" data-type="filename" data-query="file">shell.aspx</div>
+                                <div class="ioc-item" data-type="filename" data-query="file">update.ps1</div>
+                                <div class="ioc-item" data-type="extension" data-query="file">.eagle</div>
+                                <div class="ioc-item" data-type="filename" data-query="file">RECOVERY_INSTRUCTIONS.html</div>
+                            </div>
+                            
+                            <div class="ioc-category">
+                                <h4>🔧 Registry & Process</h4>
+                                <div class="ioc-item" data-type="registry" data-query="registry">HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\SystemUpdate</div>
+                                <div class="ioc-item" data-type="service" data-query="process">EagleSecurityService</div>
+                                <div class="ioc-item" data-type="process" data-query="process">rundll32.exe</div>
+                                <div class="ioc-item" data-type="task" data-query="scheduled">\\Microsoft\\Windows\\SystemUpdate\\DailyCheck</div>
+                            </div>
+                            
+                            <div class="ioc-category">
+                                <h4>🎭 User-Agents & Headers</h4>
+                                <div class="ioc-item" data-type="useragent" data-query="network">Mozilla/5.0 (compatible; MSOffice 16.0...</div>
+                                <div class="ioc-item" data-type="header" data-query="network">X-Eagle-Session</div>
+                                <div class="ioc-item" data-type="cert" data-query="ssl">SHA1: a1b2c3d4e5f6789012345678...</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="behavioral-content" class="tab-content" style="display: none;">
+                        <div class="ioc-hunter">
+                            <div class="ioc-category">
+                                <h4>🔍 Behavioral Patterns</h4>
+                                <div class="ioc-item" data-type="behavior" data-query="behavioral">PowerShell with Base64 encoding</div>
+                                <div class="ioc-item" data-type="behavior" data-query="behavioral">Unusual rundll32.exe usage</div>
+                                <div class="ioc-item" data-type="behavior" data-query="behavioral">Shadow copy deletion</div>
+                                <div class="ioc-item" data-type="behavior" data-query="behavioral">Large file enumeration</div>
+                                <div class="ioc-item" data-type="behavior" data-query="behavioral">Backup system access</div>
+                                <div class="ioc-item" data-type="behavior" data-query="behavioral">Network share enumeration</div>
+                            </div>
+                            
+                            <div class="ioc-category">
+                                <h4>🕐 Time-based Patterns</h4>
+                                <div class="ioc-item" data-type="timing" data-query="temporal">Peak activity 09:00-17:00 GMT-5</div>
+                                <div class="ioc-item" data-type="timing" data-query="temporal">Minimal weekend operations</div>
+                                <div class="ioc-item" data-type="timing" data-query="temporal">Colombian holiday patterns</div>
+                                <div class="ioc-item" data-type="timing" data-query="temporal">3-6 month campaign cycles</div>
+                            </div>
+                            
+                            <div class="ioc-category">
+                                <h4>💰 Target Profiling</h4>
+                                <div class="ioc-item" data-type="target" data-query="targeting">Financial institutions >$1B AUM</div>
+                                <div class="ioc-item" data-type="target" data-query="targeting">Latin American focus</div>
+                                <div class="ioc-item" data-type="target" data-query="targeting">SharePoint infrastructure</div>
+                                <div class="ioc-item" data-type="target" data-query="targeting">Dell ControlVault systems</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="network-content" class="tab-content" style="display: none;">
+                        <div class="ioc-hunter">
+                            <div class="ioc-category">
+                                <h4>🌐 C2 Communication</h4>
+                                <div class="ioc-item" data-type="c2" data-query="network">HTTPS beaconing patterns</div>
+                                <div class="ioc-item" data-type="c2" data-query="network">Base64 encoded payloads</div>
+                                <div class="ioc-item" data-type="c2" data-query="network">Custom X-Eagle-Session headers</div>
+                                <div class="ioc-item" data-type="c2" data-query="network">Banking application mimicry</div>
+                            </div>
+                            
+                            <div class="ioc-category">
+                                <h4>🔒 TLS/SSL Patterns</h4>
+                                <div class="ioc-item" data-type="ssl" data-query="ssl">Certificate pinning bypass</div>
+                                <div class="ioc-item" data-type="ssl" data-query="ssl">Self-signed certificates</div>
+                                <div class="ioc-item" data-type="ssl" data-query="ssl">Suspicious certificate subjects</div>
+                            </div>
+                            
+                            <div class="ioc-category">
+                                <h4>☁️ Cloud Infrastructure</h4>
+                                <div class="ioc-item" data-type="cloud" data-query="cloud">AWS us-west-1 ranges</div>
+                                <div class="ioc-item" data-type="cloud" data-query="cloud">Google Cloud us-central1</div>
+                                <div class="ioc-item" data-type="cloud" data-query="cloud">Cloudflare CDN abuse</div>
+                                <div class="ioc-item" data-type="cloud" data-query="cloud">WordPress redirect chains</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="timeline-content" class="tab-content" style="display: none;">
+                        <div class="ioc-hunter">
+                            <div class="ioc-category">
+                                <h4>📅 Campaign Timeline</h4>
+                                <div class="ioc-item" data-type="timeline" data-query="temporal">June 2025: Initial setup</div>
+                                <div class="ioc-item" data-type="timeline" data-query="temporal">July 2025: Zero-day integration</div>
+                                <div class="ioc-item" data-type="timeline" data-query="temporal">August 2025: Peak operations</div>
+                                <div class="ioc-item" data-type="timeline" data-query="temporal">Present: Active exploitation</div>
+                            </div>
+                            
+                            <div class="ioc-category">
+                                <h4>🔄 Evolution Patterns</h4>
+                                <div class="ioc-item" data-type="evolution" data-query="temporal">Infrastructure scaling</div>
+                                <div class="ioc-item" data-type="evolution" data-query="temporal">Geographic expansion</div>
+                                <div class="ioc-item" data-type="evolution" data-query="temporal">TTP sophistication</div>
+                                <div class="ioc-item" data-type="evolution" data-query="temporal">Target diversification</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="query-generator">
+                    <div class="query-header">
+                        <h4 style="color: #ffff00;">🔍 Auto-Generated Hunt Query</h4>
+                        <div class="query-type" id="queryType">KQL</div>
+                    </div>
+                    <div class="query-box" id="queryBox">
+// Click any IOC above to generate hunting queries
+// Supports: KQL, Splunk, Sigma, YARA, Suricata
+
+DeviceNetworkEvents
+| where RemoteUrl contains "sistema-bancario.mx"
+| where Timestamp > ago(30d)
+| project Timestamp, DeviceName, RemoteIP, RemoteUrl, InitiatingProcessFileName
+| sort by Timestamp desc
+                    </div>
+                    <button class="copy-btn" onclick="copyQuery()">COPY</button>
+                    <button class="copy-btn" onclick="testQuery()" style="right: 60px; background: #00ff41; color: #000;">TEST</button>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <div class="threat-intel-panel">
+                    <div class="intel-header">
+                        <div class="intel-icon">⚠️</div>
+                        <div class="intel-title">LIVE THREAT ASSESSMENT</div>
+                    </div>
+                    
+                    <div class="threat-meter">
+                        <div class="meter-label">Overall Threat Level</div>
+                        <div class="meter-bar">
+                            <div class="meter-fill" style="width: 95%;">
+                                <div class="meter-text">95% CRITICAL</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="threat-meter">
+                        <div class="meter-label">Active Campaign Status</div>
+                        <div class="meter-bar">
+                            <div class="meter-fill" style="width: 88%;">
+                                <div class="meter-text">88% ACTIVE</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="threat-meter">
+                        <div class="meter-label">Detection Difficulty</div>
+                        <div class="meter-bar">
+                            <div class="meter-fill" style="width: 92%;">
+                                <div class="meter-text">92% HIGH</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mitre-matrix">
+                    <div class="intel-header">
+                        <div class="intel-icon">🎯</div>
+                        <div class="intel-title">MITRE ATT&CK MATRIX</div>
+                    </div>
+                    
+                    <div class="mitre-grid">
+                        <div class="mitre-cell" data-technique="T1190">T1190<br/>Exploit<br/>Public App</div>
+                        <div class="mitre-cell" data-technique="T1059">T1059<br/>Command<br/>Scripting</div>
+                        <div class="mitre-cell" data-technique="T1055">T1055<br/>Process<br/>Injection</div>
+                        <div class="mitre-cell" data-technique="T1542">T1542<br/>Pre-OS<br/>Boot</div>
+                        <div class="mitre-cell" data-technique="T1547">T1547<br/>Boot/Logon<br/>Autostart</div>
+                        <div class="mitre-cell" data-technique="T1543">T1543<br/>Create/Modify<br/>System</div>
+                        <div class="mitre-cell" data-technique="T1555">T1555<br/>Credentials<br/>Password Store</div>
+                        <div class="mitre-cell" data-technique="T1486">T1486<br/>Data<br/>Encrypted</div>
+                        <div class="mitre-cell" data-technique="T1082">T1082<br/>System<br/>Information</div>
+                        <div class="mitre-cell" data-technique="T1018">T1018<br/>Remote<br/>System</div>
+                        <div class="mitre-cell" data-technique="T1021">T1021<br/>Remote<br/>Services</div>
+                        <div class="mitre-cell" data-technique="T1071">T1071<br/>Application<br/>Layer</div>
+                    </div>
+                </div>
+                
+                <div class="detection-opportunities">
+                    <div class="intel-header">
+                        <div class="intel-icon">🔍</div>
+                        <div class="intel-title">DETECTION OPPORTUNITIES</div>
+                    </div>
+                    
+                    <div class="opportunity-item" data-hunt="sharepoint">
+                        <div class="opportunity-title">SharePoint Zero-Day</div>
+                        <div class="opportunity-desc">Monitor large POST requests to _vti_bin endpoints with 200 responses</div>
+                    </div>
+                    
+                    <div class="opportunity-item" data-hunt="firmware">
+                        <div class="opportunity-title">Firmware Persistence</div>
+                        <div class="opportunity-desc">Track ControlVault registry modifications and timestamp-named DLLs</div>
+                    </div>
+                    
+                    <div class="opportunity-item" data-hunt="ransomware">
+                        <div class="opportunity-title">CryptoEagle Pre-Deployment</div>
+                        <div class="opportunity-desc">Hunt for shadow copy deletion and large file enumeration</div>
+                    </div>
+                    
+                    <div class="opportunity-item" data-hunt="c2">
+                        <div class="opportunity-title">C2 Beaconing</div>
+                        <div class="opportunity-desc">Detect periodic HTTPS traffic with X-Eagle-Session headers</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stats-ticker">
+            <div class="ticker-content">
+                <span class="ticker-item">🔥 ACTIVE HUNT: 47 IOCs Deployed</span>
+                <span class="ticker-item">⚡ LIVE DETECTION: 12 Rules Active</span>
+                <span class="ticker-item">🎯 TARGET SCOPE: 4 Countries Monitored</span>
+                <span class="ticker-item">🚨 THREAT LEVEL: CRITICAL - Immediate Action Required</span>
+                <span class="ticker-item">🔍 HUNT STATUS: 24/7 Active Monitoring</span>
+                <span class="ticker-item">💀 APT-C-36: Zero-Day + Firmware = Maximum Threat</span>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Matrix Rain Effect
+        function createMatrixRain() {
+            const matrixContainer = document.getElementById('matrixRain');
+            const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+            
+            for (let i = 0; i < 50; i++) {
+                const char = document.createElement('div');
+                char.className = 'matrix-char';
+                char.textContent = chars[Math.floor(Math.random() * chars.length)];
+                char.style.left = Math.random() * 100 + 'vw';
+                char.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                char.style.animationDelay = Math.random() * 2 + 's';
+                matrixContainer.appendChild(char);
+            }
+        }
+        
+        // Initialize Matrix Rain
+        createMatrixRain();
+        
+        // Tab Switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active class from all tabs and content
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+                
+                // Add active class to clicked tab
+                this.classList.add('active');
+                
+                // Show corresponding content
+                const tabId = this.getAttribute('data-tab') + '-content';
+                const content = document.getElementById(tabId);
+                if (content) {
+                    content.style.display = 'block';
+                }
+            });
+        });
+        
+        // IOC Click Handlers with Query Generation
+        const queryTemplates = {
+            domain: {
+                kql: `DeviceNetworkEvents
+| where RemoteUrl contains "{{IOC}}"
+| where Timestamp > ago(30d)
+| project Timestamp, DeviceName, RemoteIP, RemoteUrl, InitiatingProcessFileName
+| sort by Timestamp desc`,
+                splunk: `index=network_logs dest_host="*{{IOC}}*" earliest=-30d
+| table _time, src_ip, dest_ip, dest_host, process_name
+| sort -_time`,
+                sigma: `title: APT-C-36 Domain Communication
+logsource:
+    category: network
+detection:
+    selection:
+        destination.domain|contains: '{{IOC}}'
+    condition: selection
+level: high`,
+                suricata: `alert http any any -> any any (msg:"APT-C-36 C2 Domain {{IOC}}"; content:"{{IOC}}"; http_host; classtype:trojan-activity; sid:1000001; rev:1;)`
+            },
+            ip: {
+                kql: `DeviceNetworkEvents
+| where RemoteIP == "{{IOC}}"
+| where Timestamp > ago(30d)
+| project Timestamp, DeviceName, LocalIP, RemoteIP, RemotePort, InitiatingProcessFileName
+| sort by Timestamp desc`,
+                splunk: `index=network_logs dest_ip="{{IOC}}" earliest=-30d
+| table _time, src_ip, dest_ip, dest_port, process_name
+| sort -_time`,
+                sigma: `title: APT-C-36 IP Communication
+logsource:
+    category: network
+detection:
+    selection:
+        destination.ip: '{{IOC}}'
+    condition: selection
+level: high`,
+                suricata: `alert ip any any -> {{IOC}} any (msg:"APT-C-36 C2 IP Communication"; classtype:trojan-activity; sid:1000002; rev:1;)`
+            },
+            hash: {
+                kql: `DeviceFileEvents
+| where SHA256 == "{{IOC}}" or MD5 == "{{IOC}}" or SHA1 == "{{IOC}}"
+| project Timestamp, DeviceName, FileName, FolderPath, ProcessCommandLine
+| sort by Timestamp desc`,
+                splunk: `index=endpoint_logs (file_hash="{{IOC}}" OR md5="{{IOC}}" OR sha256="{{IOC}}")
+| table _time, host, file_name, file_path, process_name
+| sort -_time`,
+                yara: `rule APT_C36_CryptoEagle_{{RANDOM}} {
+    meta:
+        author = "Threat Hunter"
+        description = "APT-C-36 CryptoEagle Component"
+        hash = "{{IOC}}"
+    
+    strings:
+        $hash = "{{IOC}}"
+    
+    condition:
+        $hash
+}`,
+                sigma: `title: APT-C-36 Known Malware Hash
+logsource:
+    category: file_event
+detection:
+    selection:
+        - file.hash.sha256: '{{IOC}}'
+        - file.hash.md5: '{{IOC}}'
+        - file.hash.sha1: '{{IOC}}'
+    condition: selection
+level: critical`
+            },
+            filename: {
+                kql: `DeviceFileEvents
+| where FileName =~ "{{IOC}}"
+| where Timestamp > ago(30d)
+| project Timestamp, DeviceName, FileName, FolderPath, ProcessCommandLine
+| sort by Timestamp desc`,
+                splunk: `index=endpoint_logs file_name="{{IOC}}" earliest=-30d
+| table _time, host, file_name, file_path, process_name
+| sort -_time`,
+                yara: `rule APT_C36_Filename_{{RANDOM}} {
+    meta:
+        author = "Threat Hunter"  
+        description = "APT-C-36 Suspicious Filename"
+        filename = "{{IOC}}"
+    
+    condition:
+        filename matches /{{IOC}}/i
+}`
+            },
+            registry: {
+                kql: `DeviceRegistryEvents
+| where RegistryKey contains "{{IOC}}"
+| where Timestamp > ago(30d)
+| project Timestamp, DeviceName, RegistryKey, RegistryValueName, RegistryValueData
+| sort by Timestamp desc`,
+                splunk: `index=endpoint_logs registry_path="*{{IOC}}*" earliest=-30d
+| table _time, host, registry_path, registry_value, process_name
+| sort -_time`
+            },
+            process: {
+                kql: `DeviceProcessEvents
+| where ProcessCommandLine contains "{{IOC}}" or FileName =~ "{{IOC}}"
+| where Timestamp > ago(30d)
+| project Timestamp, DeviceName, FileName, ProcessCommandLine, InitiatingProcessFileName
+| sort by Timestamp desc`,
+                splunk: `index=endpoint_logs (process_name="{{IOC}}" OR command_line="*{{IOC}}*") earliest=-30d
+| table _time, host, process_name, command_line, parent_process
+| sort -_time`
+            },
+            behavior: {
+                kql: `// Behavioral Hunt: {{IOC}}
+DeviceProcessEvents
+| where ProcessCommandLine contains "powershell" and ProcessCommandLine contains "-enc"
+| where Timestamp > ago(7d)
+| project Timestamp, DeviceName, ProcessCommandLine, InitiatingProcessFileName
+| sort by Timestamp desc`,
+                splunk: `index=endpoint_logs process_name="powershell.exe" command_line="*-enc*" earliest=-7d
+| table _time, host, command_line, parent_process
+| sort -_time`
+            },
+            useragent: {
+                kql: `DeviceNetworkEvents
+| where RequestHeaders contains "{{IOC}}"
+| where Timestamp > ago(30d)  
+| project Timestamp, DeviceName, RemoteUrl, RequestHeaders
+| sort by Timestamp desc`,
+                splunk: `index=proxy_logs user_agent="{{IOC}}" earliest=-30d
+| table _time, src_ip, dest_host, user_agent, url
+| sort -_time`
+            }
+        };
+        
+        let currentQueryType = 'kql';
+        
+        // Query type cycling
+        document.getElementById('queryType').addEventListener('click', function() {
+            const types = ['KQL', 'Splunk', 'Sigma', 'YARA', 'Suricata'];
+            const currentIndex = types.indexOf(this.textContent);
+            const nextIndex = (currentIndex + 1) % types.length;
+            this.textContent = types[nextIndex];
+            currentQueryType = types[nextIndex].toLowerCase();
+        });
+        
+        // IOC click handlers
+        document.querySelectorAll('.ioc-item').forEach(item => {
+            item.addEventListener('click', function() {
+                console.log('IOC clicked:', this.textContent); // Debug log
+                
+                // Visual feedback
+                this.classList.add('clicked');
+                setTimeout(() => this.classList.remove('clicked'), 1000);
+                
+                // Get IOC data
+                const ioc = this.textContent.trim();
+                const type = this.getAttribute('data-type');
+                
+                console.log('IOC type:', type, 'IOC value:', ioc); // Debug log
+                
+                // Generate query
+                generateQuery(ioc, type);
+                
+                // Update stats
+                updateHuntStats();
+            });
+        });
+        
+        function generateQuery(ioc, type) {
+            console.log('Generating query for:', ioc, 'type:', type); // Debug log
+            
+            const templates = queryTemplates[type];
+            if (!templates) {
+                console.log('No template found for type:', type);
+                // Fallback to generic query
+                const fallbackQuery = `// Generic hunt for: ${ioc}
+DeviceNetworkEvents  
+| where RemoteUrl contains "${ioc}" or RemoteIP == "${ioc}"
+| where Timestamp > ago(30d)
+| project Timestamp, DeviceName, RemoteUrl, RemoteIP
+| sort by Timestamp desc`;
+                
+                document.getElementById('queryBox').textContent = fallbackQuery;
+                return;
+            }
+            
+            const template = templates[currentQueryType];
+            if (!template) {
+                console.log('No template found for query type:', currentQueryType);
+                return;
+            }
+            
+            // Replace placeholders
+            let query = template.replace(/\{\{IOC\}\}/g, ioc);
+            query = query.replace(/\{\{RANDOM\}\}/g, Math.floor(Math.random() * 10000));
+            
+            console.log('Generated query:', query); // Debug log
+            
+            // Update query box
+            const queryBox = document.getElementById('queryBox');
+            queryBox.textContent = query;
+            
+            // Animate query box
+            queryBox.style.borderColor = '#ff0000';
+            queryBox.style.boxShadow = '0 0 20px rgba(255, 0, 0, 0.5)';
+            
+            setTimeout(() => {
+                queryBox.style.borderColor = '#00ff41';
+                queryBox.style.boxShadow = 'none';
+            }, 1000);
+        }
+        
+        // Test function
+        function testQuery() {
+            const testQuery = `// 🔥 TEST SUCCESSFUL! 🔥
+// IOC Click Handler is Working!
+// Try clicking IOCs above to generate real hunting queries
+
+DeviceNetworkEvents
+| where RemoteUrl contains "sistema-bancario.mx"
+| where Timestamp > ago(30d)
+| project Timestamp, DeviceName, RemoteUrl, RemoteIP
+| sort by Timestamp desc`;
+            
+            document.getElementById('queryBox').textContent = testQuery;
+            
+            // Visual feedback
+            const queryBox = document.getElementById('queryBox');
+            queryBox.style.borderColor = '#00ff41';
+            queryBox.style.boxShadow = '0 0 20px rgba(0, 255, 65, 0.8)';
+            
+            setTimeout(() => {
+                queryBox.style.borderColor = '#00ff41';
+                queryBox.style.boxShadow = 'none';
+            }, 2000);
+        }
+        
+        // Copy query function
+        function copyQuery() {
+            const queryBox = document.getElementById('queryBox');
+            const copyBtn = document.querySelector('.copy-btn');
+            
+            navigator.clipboard.writeText(queryBox.textContent).then(() => {
+                copyBtn.textContent = 'COPIED!';
+                copyBtn.classList.add('copied');
+                
+                setTimeout(() => {
+                    copyBtn.textContent = 'COPY';
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+        
+        // MITRE ATT&CK cell interactions
+        document.querySelectorAll('.mitre-cell').forEach(cell => {
+            cell.addEventListener('click', function() {
+                const technique = this.getAttribute('data-technique');
+                
+                // Generate MITRE-specific hunt query
+                const mitreQuery = `// MITRE ATT&CK Technique: ${technique}
+DeviceEvents
+| where ActionType has "${technique.split('.')[0]}"
+| where Timestamp > ago(7d)
+| project Timestamp, DeviceName, ActionType, FileName, ProcessCommandLine
+| sort by Timestamp desc`;
+                
+                document.getElementById('queryBox').textContent = mitreQuery;
+                
+                // Visual feedback
+                this.style.background = 'linear-gradient(45deg, #00ff00, #008800)';
+                this.style.color = '#000000';
+                
+                setTimeout(() => {
+                    this.style.background = 'rgba(255, 0, 0, 0.3)';
+                    this.style.color = '#ff0000';
+                }, 2000);
+            });
+        });
+        
+        // Detection opportunity interactions
+        document.querySelectorAll('.opportunity-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const huntType = this.getAttribute('data-hunt');
+                
+                const huntQueries = {
+                    sharepoint: `// SharePoint Zero-Day Hunt (CVE-2025-53770)
+DeviceNetworkEvents
+| where RemoteUrl contains "_vti_bin"
+| where RequestMethod == "POST"
+| where RequestSize > 10000
+| where Timestamp > ago(24h)
+| project Timestamp, DeviceName, RemoteUrl, RemoteIP, RequestSize`,
+                    
+                    firmware: `// ControlVault Firmware Compromise Hunt
+DeviceRegistryEvents
+| where RegistryKey contains "ControlVault"
+| where ActionType == "RegistryValueSet"
+| union (DeviceFileEvents | where FileName matches regex @"\\d{14}\\.dll")
+| where Timestamp > ago(7d)`,
+                    
+                    ransomware: `// CryptoEagle Pre-Deployment Hunt
+DeviceProcessEvents
+| where ProcessCommandLine contains "vssadmin delete shadows"
+    or ProcessCommandLine contains "wbadmin delete catalog"
+    or ProcessCommandLine contains "bcdedit /set {default} recoveryenabled no"
+| where Timestamp > ago(24h)`,
+                    
+                    c2: `// C2 Beaconing Detection
+DeviceNetworkEvents
+| where RequestHeaders contains "X-Eagle-Session"
+| where RemoteUrl matches regex @"sistema-bancario|portal-financeiro|servicio-tributario"
+| where Timestamp > ago(1h)
+| summarize count() by DeviceName, RemoteUrl, bin(Timestamp, 5m)`
+                };
+                
+                if (huntQueries[huntType]) {
+                    document.getElementById('queryBox').textContent = huntQueries[huntType];
+                }
+                
+                // Visual feedback
+                this.style.borderLeftColor = '#00ff00';
+                this.style.background = 'rgba(0, 255, 0, 0.2)';
+                
+                setTimeout(() => {
+                    this.style.borderLeftColor = '#ffff00';
+                    this.style.background = 'rgba(0, 0, 0, 0.7)';
+                }, 1500);
+            });
+        });
+        
+        // Update hunt statistics
+        let huntStats = {
+            iocsDeployed: 47,
+            rulesActive: 12,
+            countries: 4
+        };
+        
+        function updateHuntStats() {
+            huntStats.iocsDeployed++;
+            huntStats.rulesActive = Math.min(huntStats.rulesActive + 1, 25);
+            
+            // Update ticker
+            const ticker = document.querySelector('.ticker-content');
+            ticker.innerHTML = `
+                <span class="ticker-item">🔥 ACTIVE HUNT: ${huntStats.iocsDeployed} IOCs Deployed</span>
+                <span class="ticker-item">⚡ LIVE DETECTION: ${huntStats.rulesActive} Rules Active</span>
+                <span class="ticker-item">🎯 TARGET SCOPE: ${huntStats.countries} Countries Monitored</span>
+                <span class="ticker-item">🚨 THREAT LEVEL: CRITICAL - Immediate Action Required</span>
+                <span class="ticker-item">🔍 HUNT STATUS: 24/7 Active Monitoring</span>
+                <span class="ticker-item">💀 APT-C-36: Zero-Day + Firmware = Maximum Threat</span>
+            `;
+        }
+        
+        // Auto-refresh threat meters
+        setInterval(() => {
+            const meters = document.querySelectorAll('.meter-fill');
+            meters.forEach(meter => {
+                const currentWidth = parseInt(meter.style.width);
+                const variation = Math.floor(Math.random() * 6) - 3; // ±3%
+                const newWidth = Math.max(80, Math.min(98, currentWidth + variation));
+                meter.style.width = newWidth + '%';
+                
+                const text = meter.querySelector('.meter-text');
+                if (text) {
+                    text.textContent = newWidth + '% ' + text.textContent.split(' ')[1];
+                }
+            });
+        }, 5000);
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + H for Hunt mode
+            if ((e.ctrlKey || e.metaKey) && e.key === 'h') {
+                e.preventDefault();
+                document.querySelector('.tab[data-tab="ioc"]').click();
+            }
+            
+            // Ctrl/Cmd + B for Behavioral
+            if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+                e.preventDefault();
+                document.querySelector('.tab[data-tab="behavioral"]').click();
+            }
+            
+            // Ctrl/Cmd + N for Network
+            if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+                e.preventDefault();
+                document.querySelector('.tab[data-tab="network"]').click();
+            }
+        });
+        
+        // Initialize with welcome message
+        setTimeout(() => {
+            const welcomeQuery = `// 🔥 WELCOME TO THE HUNTER'S ARSENAL 🔥
+// APT-C-36 "Blind Eagle" Interactive Hunting Platform
+//
+// INSTRUCTIONS:
+// 1. Click any IOC above to generate hunting queries
+// 2. Click "KQL" button to cycle query types (KQL/Splunk/Sigma/YARA/Suricata)  
+// 3. Click MITRE techniques for specific TTP hunts
+// 4. Click detection opportunities for targeted hunts
+// 5. Use keyboard shortcuts: Ctrl+H (Hunt), Ctrl+B (Behavioral), Ctrl+N (Network)
+//
+// 🎯 READY TO HUNT? Click an IOC to begin!
+
+DeviceNetworkEvents
+| where Timestamp > ago(24h)
+| where RemoteUrl has_any("sistema-bancario", "portal-financeiro", "servicio-tributario")
+| project Timestamp, DeviceName, RemoteUrl, RemoteIP
+| sort by Timestamp desc`;
+            
+            document.getElementById('queryBox').textContent = welcomeQuery;
+        }, 1000);
+        
+        // Easter egg - Konami Code
+        let konamiCode = [];
+        const konami = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA'];
+        
+        document.addEventListener('keydown', function(e) {
+            konamiCode.push(e.code);
+            konamiCode = konamiCode.slice(-10);
+            
+            if (konamiCode.join(',') === konami.join(',')) {
+                // Secret hunter mode activated
+                document.body.style.filter = 'hue-rotate(180deg)';
+                document.querySelector('.title').textContent = '💀 ELITE HUNTER MODE ACTIVATED 💀';
+                
+                setTimeout(() => {
+                    document.body.style.filter = 'none';
+                    document.querySelector('.title').textContent = '🔥 HUNTER\'S ARSENAL 🔥';
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>
+                
