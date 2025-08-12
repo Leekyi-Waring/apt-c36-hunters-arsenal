@@ -2014,7 +2014,130 @@ FileActivities
 | table _time, host, file_name, apt_classification, total_threat_score, file_category, location_risk, execution_context, command_risk, file_path, command_line, remote_ips`
             },
 
-            // Advanced MITRE ATT&CK Technique Queries (8/10 quality)
+            // 🔥 COMPLETE MITRE ATT&CK TECHNIQUE QUERIES (8/10+ quality) 🔥
+            'T1055': `// 🎯 T1055: Elite Process Injection Detection
+let TimeWindow = ago(7d);
+let InjectionProcesses = dynamic(["rundll32.exe", "regsvr32.exe", "svchost.exe", "dllhost.exe"]);
+
+let SuspiciousExecutions = DeviceProcessEvents
+| where Timestamp > TimeWindow
+| where FileName in (InjectionProcesses) or ProcessCommandLine contains "msimg32.dll"
+| extend InjectionRisk = case(
+    ProcessCommandLine contains "msimg32.dll" and ProcessCommandLine !contains "system32", "APT_C36_DLL_SIDELOAD",
+    ProcessCommandLine matches regex @"\\d{14}\\.dll", "TIMESTAMPED_DLL_LOAD",
+    FileName == "rundll32.exe" and ProcessCommandLine !contains "system32", "SUSPICIOUS_RUNDLL32",
+    FileName == "regsvr32.exe" and ProcessCommandLine contains "/s /u", "REGSVR32_BYPASS",
+    "STANDARD_EXECUTION")
+| join kind=leftouter (
+    DeviceImageLoadEvents
+    | where Timestamp > TimeWindow
+    | where ImagePath !startswith "C:\\Windows\\System32"
+    | project DeviceId, LoadTime = Timestamp, LoadedImage = ImagePath, ProcessId
+) on DeviceId, ProcessId
+| where LoadTime between (Timestamp .. (Timestamp + 2m))
+| project Timestamp, DeviceName, FileName, InjectionRisk, ProcessCommandLine, LoadedImage
+| sort by InjectionRisk desc, Timestamp desc`,
+
+            'T1542': `// 🎯 T1542: Elite Pre-OS Boot/Firmware Persistence
+let TimeWindow = ago(30d);
+
+let FirmwareActivity = DeviceRegistryEvents
+| where Timestamp > TimeWindow
+| where RegistryKey contains "ControlVault" or RegistryValueData contains "ControlVault"
+| extend FirmwareRisk = case(
+    ActionType == "RegistryValueSet" and RegistryKey contains "ControlVault", "FIRMWARE_MODIFICATION",
+    RegistryValueData contains "msimg32.dll", "DLL_FIRMWARE_LINK",
+    "FIRMWARE_ACCESS")
+| join kind=leftouter (
+    DeviceFileEvents
+    | where Timestamp > TimeWindow
+    | where FileName matches regex @"\\d{14}\\.dll"
+    | project DeviceId, FileTime = Timestamp, SuspiciousDLL = FileName, DLLPath = FolderPath
+) on DeviceId
+| where FileTime between ((Timestamp - 1h) .. (Timestamp + 1h))
+| project Timestamp, DeviceName, FirmwareRisk, RegistryKey, RegistryValueData, SuspiciousDLL, DLLPath
+| sort by FirmwareRisk desc, Timestamp desc`,
+
+            'T1547': `// 🎯 T1547: Elite Boot/Logon Autostart Execution
+let TimeWindow = ago(14d);
+
+DeviceRegistryEvents
+| where Timestamp > TimeWindow
+| where RegistryKey has_any("Run", "RunOnce", "Winlogon", "Shell", "Load")
+| where ActionType in ("RegistryValueSet", "RegistryValueDeleted")
+| extend PersistenceVector = case(
+    RegistryKey contains "HKLM" and RegistryKey contains "Run", "MACHINE_STARTUP",
+    RegistryKey contains "HKCU" and RegistryKey contains "Run", "USER_STARTUP",
+    RegistryKey contains "Winlogon", "LOGON_PERSISTENCE",
+    "OTHER_AUTOSTART")
+| extend SuspicionLevel = case(
+    RegistryValueData contains "temp\\" or RegistryValueData contains "appdata\\", "TEMP_LOCATION",
+    RegistryValueData contains "powershell" and RegistryValueData contains "-enc", "ENCODED_POWERSHELL",
+    RegistryValueName in ("SecurityUpdate", "SystemUpdate") and RegistryValueData !contains "microsoft", "MASQUERADING",
+    "STANDARD")
+| where SuspicionLevel != "STANDARD"
+| project Timestamp, DeviceName, PersistenceVector, SuspicionLevel, RegistryKey, RegistryValueName, RegistryValueData
+| sort by SuspicionLevel desc, Timestamp desc`,
+
+            'T1543': `// 🎯 T1543: Elite Create/Modify System Process
+let TimeWindow = ago(14d);
+
+let ServiceCreation = DeviceProcessEvents
+| where Timestamp > TimeWindow  
+| where ProcessCommandLine contains "sc create" or ProcessCommandLine contains "New-Service"
+| extend ServiceName = extract(@"sc create (\\w+)", 1, ProcessCommandLine)
+| extend SuspiciousService = case(
+    ServiceName in ("EagleService", "ControlVaultService", "SystemUpdateService"), "APT_SERVICE_NAME",
+    ProcessCommandLine contains "binpath" and ProcessCommandLine contains "temp\\", "TEMP_SERVICE_BINARY",
+    "STANDARD_SERVICE")
+| where SuspiciousService != "STANDARD_SERVICE"
+| project Timestamp, DeviceName, SuspiciousService, ServiceName, ProcessCommandLine, AccountName
+| sort by SuspiciousService desc, Timestamp desc`,
+
+            'T1555': `// 🎯 T1555: Elite Credentials from Password Stores
+let TimeWindow = ago(7d);
+
+let CredentialAccess = DeviceProcessEvents
+| where Timestamp > TimeWindow
+| where ProcessCommandLine contains "comsvcs.dll" and ProcessCommandLine contains "MiniDump" or
+        ProcessCommandLine contains "wbadmin" and ProcessCommandLine contains "ntds.dit" or
+        ProcessCommandLine contains "vssadmin" and ProcessCommandLine contains "copy"
+| extend CredentialMethod = case(
+    ProcessCommandLine contains "lsass", "LSASS_DUMP",
+    ProcessCommandLine contains "ntds.dit", "NTDS_BACKUP",
+    ProcessCommandLine contains "sam", "SAM_DUMP",
+    "CREDENTIAL_ACCESS")
+| join kind=leftouter (
+    DeviceFileEvents
+    | where Timestamp > TimeWindow
+    | where FolderPath contains "ControlVault" or FileName contains "vault"
+    | project DeviceId, VaultTime = Timestamp, VaultFile = FileName
+) on DeviceId
+| where VaultTime between ((Timestamp - 1h) .. (Timestamp + 1h))
+| project Timestamp, DeviceName, CredentialMethod, ProcessCommandLine, VaultFile
+| sort by CredentialMethod desc, Timestamp desc`,
+
+            'T1486': `// 🎯 T1486: Elite Data Encrypted for Impact (CryptoEagle)
+let TimeWindow = ago(24h);
+
+let RansomwareActivity = DeviceFileEvents
+| where Timestamp > TimeWindow
+| where FileName endswith ".eagle" or FileName == "RECOVERY_INSTRUCTIONS.html"
+| summarize EagleFiles = count(), FileTypes = make_set(FileName) by DeviceId, DeviceName
+| join kind=leftouter (
+    DeviceProcessEvents
+    | where Timestamp > TimeWindow
+    | where ProcessCommandLine contains "vssadmin delete shadows" or ProcessCommandLine contains "CryptoEagle"
+    | project DeviceId, RansomProcess = FileName, RansomCommand = ProcessCommandLine
+) on DeviceId
+| extend ThreatLevel = case(
+    EagleFiles > 100, "MASS_ENCRYPTION",
+    EagleFiles > 10, "PARTIAL_ENCRYPTION", 
+    isnotempty(RansomProcess), "RANSOM_EXECUTION",
+    "ENCRYPTION_ATTEMPT")
+| project DeviceName, ThreatLevel, EagleFiles, FileTypes, RansomProcess, RansomCommand
+| sort by ThreatLevel desc`,
+
             'T1059': `// 🎯 T1059: Elite Command and Scripting Interpreter Hunt
 let TimeWindow = ago(7d);
 let SuspiciousProcesses = dynamic(["powershell.exe", "cmd.exe", "wscript.exe", "cscript.exe", "mshta.exe"]);
@@ -2454,7 +2577,7 @@ DeviceEvents
                 
                 document.getElementById('queryBox').textContent = query;
                 
-                // Elite visual feedback
+                // visual feedback
                 this.style.background = 'linear-gradient(135deg, #10b981, #059669)';
                 this.style.color = '#ffffff';
                 this.style.transform = 'scale(1.15) rotateY(360deg)';
@@ -2469,7 +2592,7 @@ DeviceEvents
         
         // Elite test function
         function testQuery() {
-            const testQuery = `// 🔥 ELITE SYSTEM OPERATIONAL! 🔥
+            const testQuery = `// 🔥 SYSTEM OPERATIONAL! 🔥
 // Enterprise-grade multi-table correlation testing successful!
 
 // Advanced APT-C-36 Behavioral Correlation Test
@@ -2560,7 +2683,7 @@ SharePointAttack
 // 3. Click MITRE techniques for advanced behavioral correlation
 // 4. All queries optimized for production SOC environments
 //
-// 🔥 ELITE THREAT HUNTING: Click an IOC to deploy advanced correlation!
+// 🔥 THREAT HUNTING: Click an IOC to deploy advanced correlation!
 
 // Sample: Advanced SharePoint-to-Lateral Movement Correlation
 let SharePointExploit = DeviceNetworkEvents
