@@ -1004,11 +1004,10 @@ DeviceNetworkEvents
                 };
                 
                 const query = properMitreQueries[technique] || `// MITRE ATT&CK Technique: ${technique}
-// No specific hunting query available - use generic detection
-DeviceEvents
+// Generic hunt - technique-specific query not available
+DeviceProcessEvents
 | where Timestamp > ago(7d)
-| where ActionType contains "Process" or ActionType contains "File" or ActionType contains "Network"
-| project Timestamp, DeviceName, ActionType, FileName
+| project Timestamp, DeviceName, FileName, ProcessCommandLine, InitiatingProcessFileName
 | sort by Timestamp desc`;
                 
                 document.getElementById('queryBox').textContent = query;
